@@ -82,19 +82,33 @@
       </aside>
 
       <!-- Pantalla de ganador -->
+      <!-- Cartel de Cafecito (siempre visible; se oculta con ?cafecito=0) -->
+      <div id="cafecito-cartel" class="cafecito-cartel">
+        <span class="cafecito-texto">☕ Invitame un cafecito</span>
+        <span class="cafecito-link"></span>
+      </div>
+
       <div id="overlay-ganador" class="overlay">
         <div class="panel-ganador">
-          <div class="trofeo">🏆</div>
-          <div id="ganador-titulo" class="ganador-titulo"></div>
-          <div id="ganador-motivo" class="ganador-motivo"></div>
-          <table id="ganador-tabla" class="ganador-tabla"></table>
-          <button id="btn-nueva" class="boton boton-dorado">Nueva inscripción</button>
+          <div class="ganador-principal">
+            <div class="trofeo">🏆</div>
+            <div id="ganador-titulo" class="ganador-titulo"></div>
+            <div id="ganador-motivo" class="ganador-motivo"></div>
+            <table id="ganador-tabla" class="ganador-tabla"></table>
+            <button id="btn-nueva" class="boton boton-dorado">Nueva inscripción</button>
+          </div>
+          <div id="ganador-cafecito" class="ganador-cafecito">
+            <div class="gc-titulo">¿Te gustó?<br>Invitame un cafecito ☕</div>
+            <div id="cafecito-qr" class="cafecito-qr"></div>
+            <div class="gc-link cafecito-link"></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Panel de desarrollo: simulador de chat (se oculta con ?dev=0 o con la tecla D) -->
+  <div id="indicador-chat" class="indicador-chat" hidden></div>
   <button id="btn-dev" class="btn-dev" title="Simulador de chat (tecla D)">🛠 Simulador</button>
   <div id="panel-dev" class="panel-dev">
     <h3>Simulador de chat</h3>
@@ -119,12 +133,14 @@
     <div id="sim-chat" class="sim-chat"></div>
   </div>
 
+  <script src="js/vendor/qrcode.js"></script>
   <script src="js/config.js"></script>
   <script src="js/mazo.js"></script>
   <script src="js/interprete.js"></script>
   <script src="js/puntuacion.js"></script>
   <script src="js/juego.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/chat-ws.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/simulador.js"></script>
   <script src="js/app.js"></script>
