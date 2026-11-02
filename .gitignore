@@ -1,2 +1,6 @@
 node_modules/
 .DS_Store
+
+# Configuración local del conector (tiene tu usuario de TikTok): no se sube
+.env
+conector/config.local.json
