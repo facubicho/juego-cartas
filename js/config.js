@@ -20,6 +20,12 @@
     pausaMesaLlenaMs: 3000,       // pausa antes de arrancar cuando se llena la mesa
     comandoJugar: '!jugar',
     comandoSalir: '!salir',
+    comandoCafecito: '!cafecito',
+    segundosEntreCafecitos: 60,   // !cafecito responde como máximo una vez por minuto (en total)
+    cafecito: {
+      activo: true,               // se puede ocultar con ?cafecito=0
+      url: 'https://cafecito.app/facubicho'
+    },
     puntos: {
       color: 1,
       palo: 2,
@@ -33,7 +39,8 @@
   function crearConfig(cambios) {
     const c = cambios || {};
     return Object.assign({}, CONFIG_BASE, c, {
-      puntos: Object.assign({}, CONFIG_BASE.puntos, c.puntos || {})
+      puntos: Object.assign({}, CONFIG_BASE.puntos, c.puntos || {}),
+      cafecito: Object.assign({}, CONFIG_BASE.cafecito, c.cafecito || {})
     });
   }
 

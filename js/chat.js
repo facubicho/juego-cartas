@@ -1,10 +1,12 @@
 /*
  * Punto único de entrada del chat.
  *
- * Todo mensaje (del simulador hoy, de TikTok LIVE mañana) entra por
- *     onChatMessage(usuario, texto)
- * que lo pasa al motor del juego. Para conectar el chat real alcanza con
- * llamar a esta función por cada comentario recibido.
+ * Todo mensaje (del simulador o del chat de TikTok LIVE) entra por
+ *     onChatMessage(usuario, texto, nombreVisible)
+ * que lo pasa al motor del juego.
+ *   - usuario: identificador único (en TikTok, el nombre de usuario único).
+ *   - nombreVisible (opcional): lo que se muestra en pantalla; si falta, se muestra el usuario.
+ * El chat real de TikTok llega por js/chat-ws.js, que llama a esta misma función.
  */
 (function (global) {
   'use strict';
@@ -13,10 +15,10 @@
   function crearConectorChat(juego) {
     const oyentes = [];
 
-    function onChatMessage(usuario, texto) {
-      const resultado = juego.recibirMensaje(usuario, texto);
+    function onChatMessage(usuario, texto, nombreVisible) {
+      const resultado = juego.recibirMensaje(usuario, texto, nombreVisible);
       oyentes.forEach(function (fn) {
-        try { fn(usuario, texto, resultado); } catch (e) { console.error(e); }
+        try { fn(usuario, texto, resultado, nombreVisible); } catch (e) { console.error(e); }
       });
       return resultado;
     }
