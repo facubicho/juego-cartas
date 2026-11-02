@@ -5,6 +5,7 @@ require('../js/interprete.js');
 require('../js/puntuacion.js');
 require('../js/juego.js');
 require('../js/chat.js');
+require('../js/chat-ws.js');
 
 const AL10 = globalThis.AL10;
 

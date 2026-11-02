@@ -48,7 +48,7 @@
     function jugadaDelTurno(texto) {
       const actual = juego.jugadorActual();
       if (!actual || juego.subfase !== 'turno') return;
-      enviar(actual.nombre, texto || aleatorio(PREDICCIONES));
+      enviar(actual.clave, texto || aleatorio(PREDICCIONES));
     }
 
     // Registro de chat del simulador
@@ -69,14 +69,17 @@
 
     function dibujarUsuarios() {
       const actual = juego.jugadorActual();
-      const enMesa = juego.jugadores.map((j) => j.nombre);
-      const nombres = Array.from(new Set(enMesa.concat(juego.espera, usuariosConocidos)));
+      // Se elige por usuario único (como en TikTok); el botón muestra lo que se ve en pantalla.
+      const enMesa = juego.jugadores.map((j) => j.clave);
+      const etiquetas = {};
+      juego.jugadores.concat(juego.listaEspera).forEach((j) => { etiquetas[j.clave] = j.nombre; });
+      const nombres = Array.from(new Set(enMesa.concat(juego.listaEspera.map((e) => e.clave), usuariosConocidos.map((u) => u.toLowerCase()))));
       const cont = $('sim-usuarios');
       cont.innerHTML = '';
       nombres.forEach((n) => {
         const b = document.createElement('button');
-        b.className = 'sim-usuario' + (actual && actual.nombre === n ? ' turno' : '') + (enMesa.indexOf(n) >= 0 ? ' en-mesa' : '');
-        b.textContent = n;
+        b.className = 'sim-usuario' + (actual && actual.clave === n ? ' turno' : '') + (enMesa.indexOf(n) >= 0 ? ' en-mesa' : '');
+        b.textContent = etiquetas[n] && etiquetas[n].toLowerCase() !== n ? etiquetas[n] + ' (' + n + ')' : n;
         b.addEventListener('click', () => { inputUsuario.value = n; inputMensaje.focus(); });
         cont.appendChild(b);
       });
@@ -87,7 +90,7 @@
       dibujarUsuarios();
       if (tipo === 'turno') {
         // el usuario del turno queda preseleccionado en el formulario
-        inputUsuario.value = datos.nombre;
+        inputUsuario.value = juego.jugadorActual() ? juego.jugadorActual().clave : datos.nombre;
         if (botsActivos) {
           const numeroTurno = datos.numeroTurno;
           if (Math.random() < 0.15) return; // no contesta

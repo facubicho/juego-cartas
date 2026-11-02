@@ -5,12 +5,14 @@
  * Subfases de 'jugando': 'turno' (esperando predicción), 'revelando' (carta dada vuelta),
  *                        'pausa' (se acabó el tiempo).
  *
- * Toda la entrada del chat llega por recibirMensaje(usuario, texto).
+ * Toda la entrada del chat llega por recibirMensaje(usuario, texto, nombreVisible).
+ *   - usuario: identificador único (en TikTok, el nombre de usuario único).
+ *   - nombreVisible (opcional): lo que se muestra en pantalla (por ejemplo el apodo).
  * La interfaz se entera de los cambios con juego.on((tipo, datos, juego) => ...).
  *
  * Eventos: inscripcionAbierta, jugadorInscripto, mesaLlena, entraEnEspera, salioDeEspera,
  *          faltanJugadores, partidaIniciada, turno, prediccionInvalida, revelacion,
- *          tiempoAgotado, jugadorEliminado, entraDeEspera, partidaTerminada.
+ *          tiempoAgotado, jugadorEliminado, entraDeEspera, partidaTerminada, cafecito.
  */
 (function (global) {
   'use strict';
@@ -39,7 +41,13 @@
       this._sacarCarta = o.sacarCarta || (() => AL10.sacarCarta(this.rng));
       this._oyentes = [];
       this._timer = null;
+      this._ultimoCafecito = null; // no se reinicia entre partidas
       this._reiniciarEstado();
+    }
+
+    /** Nombres de la lista de espera, en orden. */
+    get espera() {
+      return this.listaEspera.map((e) => e.nombre);
     }
 
     /* ---------- Suscripción a eventos ---------- */
@@ -76,7 +84,7 @@
       this.fase = 'espera';
       this.subfase = null;
       this.jugadores = [];     // orden de la mesa = orden de turnos = orden de ingreso
-      this.espera = [];        // lista de espera (nombres)
+      this.listaEspera = [];   // lista de espera: { clave, nombre }
       this.eliminados = [];
       this.indiceTurno = -1;
       this.numeroTurno = 0;
@@ -88,8 +96,8 @@
       this._arranqueProgramado = false;
     }
 
-    _crearJugador(nombre) {
-      return { clave: clave(nombre), nombre: nombre, puntos: 0, sinResponder: 0, jugadas: 0 };
+    _crearJugador(claveJugador, nombre) {
+      return { clave: claveJugador, nombre: nombre, puntos: 0, sinResponder: 0, jugadas: 0 };
     }
 
     jugadorActual() {
@@ -104,7 +112,7 @@
 
     _enEspera(nombre) {
       const k = clave(nombre);
-      return this.espera.findIndex((n) => clave(n) === k);
+      return this.listaEspera.findIndex((e) => e.clave === k);
     }
 
     estado() {
@@ -175,33 +183,35 @@
 
     /* ---------- Entrada única del chat ---------- */
 
-    recibirMensaje(usuario, texto) {
-      const nombre = limpiarNombre(usuario);
+    recibirMensaje(usuario, texto, nombreVisible) {
+      const id = limpiarNombre(usuario);
+      const nombre = limpiarNombre(nombreVisible) || id;
       const t = String(texto == null ? '' : texto).trim();
-      if (!nombre || !t) return { accion: 'ignorado' };
+      if (!id || !t) return { accion: 'ignorado' };
 
       const comando = t.toLowerCase().split(/\s+/)[0];
-      if (comando === this.config.comandoJugar) return this._inscribir(nombre);
-      if (comando === this.config.comandoSalir) return this._salir(nombre);
+      if (comando === this.config.comandoJugar) return this._inscribir(id, nombre);
+      if (comando === this.config.comandoSalir) return this._salir(id);
+      if (comando === this.config.comandoCafecito) return this._cafecito(nombre);
 
       // Solo cuenta el jugador del turno, y solo mientras el reloj corre
       // (después de la primera predicción válida la subfase cambia y se ignora el resto).
       if (this.fase === 'jugando' && this.subfase === 'turno') {
         const actual = this.jugadorActual();
-        if (actual && actual.clave === clave(nombre)) return this._procesarPrediccion(actual, t);
+        if (actual && actual.clave === clave(id)) return this._procesarPrediccion(actual, t);
       }
       return { accion: 'ignorado' };
     }
 
     /* ---------- Inscripción / salida ---------- */
 
-    _inscribir(nombre) {
+    _inscribir(id, nombre) {
       if (this.fase !== 'inscripcion' && this.fase !== 'jugando') return { accion: 'ignorado', motivo: 'sinInscripcion' };
-      if (this._buscar(nombre) || this._enEspera(nombre) >= 0) return { accion: 'ignorado', motivo: 'yaAnotado' };
+      if (this._buscar(id) || this._enEspera(id) >= 0) return { accion: 'ignorado', motivo: 'yaAnotado' };
 
       const hayLugar = this.fase === 'inscripcion' && this.jugadores.length < this.config.maxJugadores;
       if (hayLugar) {
-        const j = this._crearJugador(nombre);
+        const j = this._crearJugador(clave(id), nombre);
         this.jugadores.push(j);
         this._emitir('jugadorInscripto', { nombre: nombre, orden: this.jugadores.length });
         if (this.jugadores.length >= this.config.maxJugadores && !this._arranqueProgramado) {
@@ -213,9 +223,9 @@
 
       // Mesa llena (o partida en curso): espectador o lista de espera.
       if (this.config.listaDeEspera) {
-        this.espera.push(nombre);
-        this._emitir('mesaLlena', { nombre: nombre, enEspera: true, posicion: this.espera.length });
-        return { accion: 'enEspera', posicion: this.espera.length };
+        this.listaEspera.push({ clave: clave(id), nombre: nombre });
+        this._emitir('mesaLlena', { nombre: nombre, enEspera: true, posicion: this.listaEspera.length });
+        return { accion: 'enEspera', posicion: this.listaEspera.length };
       }
       this._emitir('mesaLlena', { nombre: nombre, enEspera: false });
       return { accion: 'espectador' };
@@ -224,8 +234,8 @@
     _salir(nombre) {
       const idxEspera = this._enEspera(nombre);
       if (idxEspera >= 0) {
-        const n = this.espera.splice(idxEspera, 1)[0];
-        this._emitir('salioDeEspera', { nombre: n });
+        const e = this.listaEspera.splice(idxEspera, 1)[0];
+        this._emitir('salioDeEspera', { nombre: e.nombre });
         return { accion: 'salio' };
       }
       const j = this._buscar(nombre);
@@ -252,13 +262,32 @@
     }
 
     _entrarDeEspera() {
-      if (!this.config.listaDeEspera || !this.espera.length) return null;
+      if (!this.config.listaDeEspera || !this.listaEspera.length) return null;
       if (this.jugadores.length >= this.config.maxJugadores) return null;
-      const nombre = this.espera.shift();
-      const j = this._crearJugador(nombre);
+      const e = this.listaEspera.shift();
+      const j = this._crearJugador(e.clave, e.nombre);
       this.jugadores.push(j); // entra al final del orden (orden de ingreso)
-      this._emitir('entraDeEspera', { nombre: nombre, orden: this.jugadores.length });
+      this._emitir('entraDeEspera', { nombre: e.nombre, orden: this.jugadores.length });
       return j;
+    }
+
+    /* ---------- Cafecito ---------- */
+
+    /**
+     * Responde !cafecito mostrando el link. Como máximo una vez cada
+     * config.segundosEntreCafecitos (en total, no por jugador), para no llenar el panel.
+     */
+    _cafecito(nombre) {
+      const c = this.config.cafecito;
+      if (!c || !c.activo || !c.url) return { accion: 'ignorado', motivo: 'cafecitoDesactivado' };
+      const ahora = this.reloj.ahora();
+      const espera = this.config.segundosEntreCafecitos * 1000;
+      if (this._ultimoCafecito !== null && ahora - this._ultimoCafecito < espera) {
+        return { accion: 'ignorado', motivo: 'cafecitoReciente' };
+      }
+      this._ultimoCafecito = ahora;
+      this._emitir('cafecito', { nombre: nombre, url: c.url });
+      return { accion: 'cafecito' };
     }
 
     /** Saca a un jugador de la mesa. Devuelve true si era el jugador del turno. */

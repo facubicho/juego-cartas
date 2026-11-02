@@ -79,6 +79,22 @@
     );
   }
 
+  /* ---------- Cafecito ---------- */
+
+  /** "https://cafecito.app/facubicho" -> "cafecito.app/facubicho" */
+  function linkVisible(url) {
+    return String(url || '').replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  }
+
+  /** QR en SVG generado en la página (librería incluida en js/vendor, sin servicios externos). */
+  function svgQR(url) {
+    if (typeof global.qrcode !== 'function') return '';
+    const qr = global.qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    return qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true, alt: 'Código QR de ' + linkVisible(url) });
+  }
+
   /* ---------- UI ---------- */
 
   function crearUI(juego) {
@@ -92,6 +108,7 @@
     document.querySelectorAll('.comando').forEach((el) => { el.textContent = cfg.comandoJugar; });
     document.title = 'Adiviná y llegá a ' + cfg.puntajeObjetivo;
     dibujarTablaPuntos(cfg);
+    prepararCafecito(cfg.cafecito);
 
     $('btn-abrir').addEventListener('click', () => juego.abrirInscripcion());
     $('btn-empezar').addEventListener('click', () => juego.iniciarPartida());
@@ -122,6 +139,8 @@
           prepararCartaDorso();
           break;
         case 'prediccionInvalida':
+          // Si no nombró ningún color, palo o número es charla: no se avisa (no llenar el panel).
+          if (datos.motivo === 'vacia') break;
           aviso('@' + datos.nombre + ': “' + datos.texto + '” ' + (MOTIVOS_INVALIDA[datos.motivo] || 'no es válida') + '. ¡Probá de nuevo!', 'alerta');
           break;
         case 'revelacion':
@@ -129,6 +148,9 @@
           break;
         case 'jugadorEliminado':
           aviso('@' + datos.nombre + ' sale de la mesa: ' + (MOTIVOS_ELIMINACION[datos.motivo] || datos.motivo), 'error');
+          break;
+        case 'cafecito':
+          aviso('☕ ¿Te gusta el juego? Invitame un cafecito: ' + linkVisible(datos.url), 'cafe');
           break;
         case 'entraDeEspera':
           aviso('@' + datos.nombre + ' entra desde la lista de espera', 'ok');
@@ -348,9 +370,20 @@
     }
 
     render();
+    /* ----- Cafecito ----- */
+
+    function prepararCafecito(c) {
+      const activo = !!(c && c.activo && c.url);
+      document.body.classList.toggle('sin-cafecito', !activo);
+      if (!activo) return;
+      document.querySelectorAll('.cafecito-link').forEach((el) => { el.textContent = linkVisible(c.url); });
+      $('cafecito-qr').innerHTML = svgQR(c.url);
+    }
+
     return { render: render, aviso: aviso };
   }
 
   AL10.crearUI = crearUI;
   AL10.htmlCarta = htmlCarta;
+  AL10.linkVisible = linkVisible;
 })(typeof window !== 'undefined' ? window : globalThis);
