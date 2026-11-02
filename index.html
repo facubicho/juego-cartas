@@ -3,9 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hola Mundo</title>
+  <title>Adiviná y llegá a 10</title>
+  <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-  <h1>Hola mundo</h1>
+  <!-- Escenario 16:9 (1920x1080) que se escala para entrar en la ventana. Esto es lo que se captura en OBS. -->
+  <div id="escenario-contenedor">
+    <div id="escenario">
+      <header class="cabecera">
+        <h1 class="titulo">Adiviná y llegá a <span id="titulo-objetivo">10</span></h1>
+        <div id="estado-fase" class="estado-fase"></div>
+      </header>
+
+      <main class="zona-mesa">
+        <div class="mesa"></div>
+        <div id="asientos" class="asientos"></div>
+
+        <div class="centro-mesa">
+          <!-- Antes de abrir la inscripción -->
+          <div id="vista-espera" class="vista">
+            <div class="cartel-grande">¿Te animás a adivinar la carta?</div>
+            <button id="btn-abrir" class="boton boton-dorado">Abrir inscripción</button>
+          </div>
+
+          <!-- Inscripción -->
+          <div id="vista-inscripcion" class="vista">
+            <div class="cartel-grande">Escribí <span class="comando">!jugar</span> en el chat</div>
+            <div class="cuenta-regresiva"><span id="inscripcion-segundos">60</span><small>seg</small></div>
+            <div id="inscripcion-info" class="cartel-chico"></div>
+            <button id="btn-empezar" class="boton boton-dorado">Empezar ya</button>
+          </div>
+
+          <!-- Partida -->
+          <div id="vista-juego" class="vista">
+            <div id="info-turno" class="info-turno"></div>
+            <div class="fila-carta">
+              <div class="reloj" id="reloj">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="reloj-fondo" cx="60" cy="60" r="52"></circle>
+                  <circle class="reloj-arco" id="reloj-arco" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <span id="reloj-numero">10</span>
+              </div>
+              <div class="carta" id="carta">
+                <div class="carta-interior">
+                  <div class="carta-cara carta-dorso"></div>
+                  <div class="carta-cara carta-frente" id="carta-frente"></div>
+                </div>
+              </div>
+              <div id="resultado" class="resultado"></div>
+            </div>
+            <div id="prediccion" class="prediccion"></div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="panel-lateral">
+        <section class="tarjeta">
+          <h2>Cómo jugar</h2>
+          <ol>
+            <li>Escribí <b class="comando">!jugar</b> (máximo <span class="max-jugadores">10</span> jugadores).</li>
+            <li>En tu turno escribí tu predicción: color, palo, número o todo junto. <br><i>Ej: “rojo”, “picas”, “7”, “rey de picas”, “5♦”, “joker”.</i></li>
+            <li>¡El primero en llegar a <b class="objetivo">10</b> puntos gana!</li>
+          </ol>
+        </section>
+        <section class="tarjeta">
+          <h2>Puntos</h2>
+          <table id="tabla-puntos" class="tabla-puntos"></table>
+        </section>
+        <section class="tarjeta">
+          <h2>Lista de espera</h2>
+          <div id="lista-espera" class="lista-espera"></div>
+        </section>
+        <section class="tarjeta tarjeta-avisos">
+          <h2>Avisos</h2>
+          <div id="avisos" class="avisos"></div>
+        </section>
+      </aside>
+
+      <!-- Pantalla de ganador -->
+      <div id="overlay-ganador" class="overlay">
+        <div class="panel-ganador">
+          <div class="trofeo">🏆</div>
+          <div id="ganador-titulo" class="ganador-titulo"></div>
+          <div id="ganador-motivo" class="ganador-motivo"></div>
+          <table id="ganador-tabla" class="ganador-tabla"></table>
+          <button id="btn-nueva" class="boton boton-dorado">Nueva inscripción</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de desarrollo: simulador de chat (se oculta con ?dev=0 o con la tecla D) -->
+  <button id="btn-dev" class="btn-dev" title="Simulador de chat (tecla D)">🛠 Simulador</button>
+  <div id="panel-dev" class="panel-dev">
+    <h3>Simulador de chat</h3>
+    <label>Usuario <input id="sim-usuario" type="text" value="ana" autocomplete="off"></label>
+    <label>Mensaje <input id="sim-mensaje" type="text" placeholder="!jugar, 5 de diamantes, rojo, joker…" autocomplete="off"></label>
+    <button id="sim-enviar" class="boton-sim primario">Enviar</button>
+
+    <div class="sim-grupo">
+      <button id="sim-abrir" class="boton-sim">Abrir inscripción</button>
+      <button id="sim-12" class="boton-sim">Simular 12 usuarios (!jugar)</button>
+      <button id="sim-3" class="boton-sim">Simular 3 usuarios</button>
+      <button id="sim-empezar" class="boton-sim">Empezar ya</button>
+      <button id="sim-aleatoria" class="boton-sim">Jugada aleatoria del turno</button>
+      <button id="sim-joker" class="boton-sim">“joker” del turno</button>
+      <label class="sim-check"><input id="sim-bots" type="checkbox"> Bots responden solos</label>
+    </div>
+
+    <div class="sim-subtitulo">Usuarios (clic para elegir)</div>
+    <div id="sim-usuarios" class="sim-usuarios"></div>
+
+    <div class="sim-subtitulo">Chat</div>
+    <div id="sim-chat" class="sim-chat"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/mazo.js"></script>
+  <script src="js/interprete.js"></script>
+  <script src="js/puntuacion.js"></script>
+  <script src="js/juego.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

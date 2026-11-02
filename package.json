@@ -1,0 +1,10 @@
+{
+  "name": "juego-cartas",
+  "version": "1.0.0",
+  "description": "Adiviná y llegá a 10: juego de cartas para lives de TikTok",
+  "private": true,
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "license": "UNLICENSED"
+}
