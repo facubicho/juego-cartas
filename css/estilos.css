@@ -573,3 +573,49 @@ body.sin-dev .indicador-chat { display: none; }
   60% { transform: translateX(-8px); }
   80% { transform: translateX(8px); }
 }
+
+/* ---------- Modo sala online (anfitrión) ---------- */
+
+.boton-sala { background: linear-gradient(180deg, #7fd3ff, #2b8fd6); color: #06253d; }
+.boton-sala:hover:not(:disabled) { filter: brightness(1.08); }
+
+body.modo-sala #tarjeta-como-jugar { display: none; }
+.tarjeta-sala { border-color: rgba(127,211,255,.5); }
+.sala-fila { display: flex; gap: 18px; align-items: center; }
+.sala-qr { flex: 0 0 150px; width: 150px; height: 150px; padding: 6px; border-radius: 12px; background: #fff; }
+.sala-qr svg { display: block; width: 100%; height: 100%; }
+.sala-datos { min-width: 0; }
+.sala-titulo { font-size: 20px; opacity: .8; }
+.sala-codigo { font-size: 64px; font-weight: 900; letter-spacing: 8px; line-height: 1; color: #7fd3ff; }
+.sala-link { font-size: 19px; font-weight: 700; margin: 6px 0 8px; word-break: break-all; }
+.boton-copiar {
+  font: inherit; font-size: 18px; font-weight: 800;
+  padding: 6px 16px; border: none; border-radius: 20px; cursor: pointer;
+  background: #7fd3ff; color: #06253d;
+}
+.sala-personas-titulo { margin-top: 10px; font-size: 18px; opacity: .85; }
+.sala-personas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-height: 76px; overflow: hidden; }
+.sala-persona { font-size: 17px; padding: 2px 10px; border-radius: 12px; background: rgba(255,255,255,.12); opacity: .55; }
+.sala-persona::before { content: '● '; color: #999; }
+.sala-persona.conectada { opacity: 1; }
+.sala-persona.conectada::before { color: #3ddc84; }
+.sala-persona.en-mesa { background: rgba(244,196,48,.25); }
+.sala-personas .vacio { font-size: 18px; opacity: .6; }
+.comando-sala { color: #7fd3ff; background: rgba(0,0,0,.35); padding: 2px 14px; border-radius: 12px; }
+body.modo-sala #cartel-inscripcion { font-size: 44px; }
+
+.panel-sala-error {
+  max-width: 900px; padding: 40px 60px; border-radius: 30px; text-align: center;
+  background: #0a4524; border: 6px solid var(--dorado);
+  display: flex; flex-direction: column; gap: 30px; align-items: center;
+}
+.sala-error-texto { font-size: 40px; font-weight: 800; }
+.panel-sala-error .boton { text-decoration: none; }
+
+.aviso-reconectando {
+  display: none;
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 30; font-size: 26px; font-weight: 800;
+  padding: 8px 24px; border-radius: 24px; background: #b71c1c;
+}
+body.sala-desconectada .aviso-reconectando { display: block; }

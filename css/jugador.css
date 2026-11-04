@@ -1,0 +1,155 @@
+/* ===== Pantalla del jugador (celular, vertical) ===== */
+
+:root {
+  --verde: #0d6234;
+  --verde-oscuro: #08401f;
+  --dorado: #f4c430;
+  --rojo: #c8102e;
+  --texto: #fffaf0;
+  --tarjeta: rgba(0, 0, 0, .32);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: linear-gradient(170deg, #15894a, var(--verde-oscuro)) fixed;
+  color: var(--texto);
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.35;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] { display: none !important; }
+
+.pantalla {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.titulo { margin: 24px 0 0; font-size: 32px; font-weight: 900; color: var(--dorado); text-align: center; text-shadow: 0 3px 0 #7a5a00; }
+.sub { margin: 0 0 8px; text-align: center; opacity: .85; }
+
+.tarjeta {
+  background: var(--tarjeta);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-weight: 700; }
+.campo input {
+  font: inherit;
+  font-size: 20px; /* 16px o más: el celular no hace zoom al tocar */
+  padding: 14px 14px;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,.25);
+  background: #fffdf7;
+  color: #111;
+  width: 100%;
+}
+.campo input:focus { outline: none; border-color: var(--dorado); }
+.campo input:disabled { background: #c9c9c9; color: #555; }
+#entrar-codigo { text-transform: uppercase; letter-spacing: 6px; font-weight: 900; }
+
+.boton {
+  font: inherit;
+  font-weight: 800;
+  font-size: 20px;
+  min-height: 52px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  width: 100%;
+  touch-action: manipulation;
+}
+.boton:disabled { opacity: .45; cursor: not-allowed; }
+.boton-principal { background: linear-gradient(180deg, #ffe27a, var(--dorado)); color: #3b2a00; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.boton-principal:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.boton-secundario { background: rgba(255,255,255,.14); color: var(--texto); min-height: 46px; font-size: 18px; }
+.boton-grande { min-height: 64px; font-size: 24px; }
+
+.error { min-height: 1.3em; margin: 0 0 10px; color: #ffd27a; font-weight: 700; }
+
+.aviso-conexion {
+  position: sticky; top: 0; z-index: 10;
+  padding: 10px; text-align: center; font-weight: 800;
+  background: #b71c1c;
+}
+
+.barra { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 17px; }
+.barra-sala b { letter-spacing: 3px; color: var(--dorado); }
+.barra-yo { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barra-yo b { font-size: 22px; color: var(--dorado); }
+
+.bloque-estado { text-align: center; }
+.bloque-estado.mi-turno { background: rgba(244,196,48,.22); border-color: var(--dorado); box-shadow: 0 0 0 3px var(--dorado) inset; }
+.estado-titulo { font-size: 26px; font-weight: 900; }
+.estado-detalle { margin-top: 4px; font-size: 18px; opacity: .9; }
+.reloj { margin-top: 6px; font-size: 88px; font-weight: 900; line-height: 1; color: var(--dorado); }
+.reloj small { font-size: 22px; margin-left: 4px; }
+.reloj.urgente { color: #ff6b6b; }
+
+.acciones { display: flex; flex-direction: column; gap: 10px; }
+
+.rapidos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.rapido {
+  font: inherit; font-size: 18px; font-weight: 800;
+  min-height: 52px;
+  border: none; border-radius: 12px;
+  background: #fffdf7; color: #111;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.rapido.rojo { color: var(--rojo); }
+.rapido.palo { font-size: 30px; line-height: 1; }
+.rapido.joker { grid-column: span 4; background: #ffe9a8; }
+.rapido:first-child, .rapido:nth-child(2) { grid-column: span 2; }
+.rapido:disabled { opacity: .4; }
+#bloque-prediccion.esperando .rapidos,
+#bloque-prediccion.esperando #btn-enviar,
+#bloque-prediccion.esperando #prediccion-aviso { display: none; }
+#bloque-prediccion.esperando .campo { margin-bottom: 0; }
+.rapido:active:not(:disabled) { transform: scale(.96); }
+
+.bloque-subtitulo { font-size: 15px; text-transform: uppercase; letter-spacing: 1px; opacity: .75; margin-bottom: 8px; }
+.fila-carta { display: flex; gap: 14px; align-items: center; }
+.mini-carta {
+  flex: 0 0 78px; height: 110px;
+  border-radius: 10px;
+  background: #fffdf7; color: #111;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0,0,0,.35);
+}
+.mini-carta.rojo { color: var(--rojo); }
+.mini-carta .valor { font-size: 34px; line-height: 1; }
+.mini-carta .palo { font-size: 38px; line-height: 1; }
+.mini-carta.joker { font-family: inherit; font-size: 13px; text-align: center; }
+.mini-carta.joker .palo { font-size: 40px; }
+.mini-carta.cabeza > * { transform: rotate(180deg); }
+.ultima-jugada { font-size: 18px; }
+.ultima-jugada .puntos-bien { color: #7dff9b; font-weight: 900; font-size: 22px; }
+.ultima-jugada .puntos-mal { color: #ff8a8a; font-weight: 900; font-size: 22px; }
+
+.lista-puntajes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.lista-puntajes li {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.08);
+  font-size: 18px;
+}
+.lista-puntajes li.turno { background: rgba(244,196,48,.3); }
+.lista-puntajes li.yo { outline: 2px solid rgba(255,255,255,.6); }
+.lista-puntajes .nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lista-puntajes .pts { font-weight: 900; }
+.lista-puntajes li.eliminado { opacity: .5; text-decoration: line-through; }

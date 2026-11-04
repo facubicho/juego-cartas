@@ -10,6 +10,7 @@
  *   ?dev=0        oculta el simulador (para capturar en OBS)
  *   ?cafecito=0   oculta el cartel de Cafecito (y desactiva !cafecito)
  *   ?chat=ws://localhost:8080   recibe el chat de TikTok desde el conector (también acepta ?chat=8080)
+ *   ?anfitrion=ABCD  pantalla del anfitrión de una sala online (la abre "Crear sala"; necesita npm run servidor)
  */
 (function (global) {
   'use strict';
@@ -19,6 +20,25 @@
   function numero(nombre) {
     const v = parseInt(params.get(nombre), 10);
     return Number.isFinite(v) && v > 0 ? v : undefined;
+  }
+
+  // Escala el escenario 1920x1080 al espacio disponible.
+  function escalar() {
+    const panel = document.body.classList.contains('dev-abierto') ? document.getElementById('panel-dev').offsetWidth : 0;
+    const ancho = window.innerWidth - panel;
+    const alto = window.innerHeight;
+    const escala = Math.min(ancho / 1920, alto / 1080);
+    document.documentElement.style.setProperty('--escala', escala);
+    document.documentElement.style.setProperty('--ancho-panel', panel + 'px');
+  }
+  window.addEventListener('resize', escalar);
+
+  // Modo sala online (anfitrión): las reglas corren en el servidor; acá solo se dibuja la mesa.
+  const codigoSala = (params.get('anfitrion') || '').toUpperCase();
+  if (/^[A-Z]{4}$/.test(codigoSala)) {
+    AL10.iniciarModoAnfitrion(codigoSala);
+    escalar();
+    return;
   }
 
   const cambios = {};
@@ -86,15 +106,7 @@
     global.clienteChat = cliente;
   }
 
-  // Escala el escenario 1920x1080 al espacio disponible.
-  function escalar() {
-    const panel = document.body.classList.contains('dev-abierto') ? document.getElementById('panel-dev').offsetWidth : 0;
-    const ancho = window.innerWidth - panel;
-    const alto = window.innerHeight;
-    const escala = Math.min(ancho / 1920, alto / 1080);
-    document.documentElement.style.setProperty('--escala', escala);
-    document.documentElement.style.setProperty('--ancho-panel', panel + 'px');
-  }
-  window.addEventListener('resize', escalar);
+  // Si la página la sirve el servidor de salas, aparece "Crear sala online".
+  AL10.ofrecerCrearSala();
   escalar();
 })(window);

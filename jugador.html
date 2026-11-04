@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d6234">
+  <title>Adiviná y llegá a 10 — Jugador</title>
+  <link rel="stylesheet" href="css/jugador.css">
+</head>
+<body>
+  <div id="aviso-conexion" class="aviso-conexion" hidden>Reconectando…</div>
+
+  <!-- Entrada: código de sala (si no vino en el link) y nombre -->
+  <main id="pantalla-entrar" class="pantalla">
+    <h1 class="titulo">Adiviná y llegá a 10</h1>
+    <p class="sub">Versión online</p>
+    <form id="form-entrar" class="tarjeta" autocomplete="off">
+      <label id="grupo-codigo" class="campo" hidden>
+        <span>Código de la sala</span>
+        <input id="entrar-codigo" type="text" inputmode="text" maxlength="4" autocapitalize="characters" placeholder="ABCD">
+      </label>
+      <label class="campo">
+        <span>Tu nombre</span>
+        <input id="entrar-nombre" type="text" maxlength="20" placeholder="¿Cómo te llamás?" enterkeyhint="go">
+      </label>
+      <p id="entrar-error" class="error" role="alert"></p>
+      <button id="btn-entrar" class="boton boton-principal" type="submit">Entrar</button>
+    </form>
+  </main>
+
+  <!-- Dentro de la sala -->
+  <main id="pantalla-sala" class="pantalla" hidden>
+    <header class="barra">
+      <div class="barra-sala">Sala <b id="yo-sala"></b></div>
+      <div class="barra-yo"><span id="yo-nombre"></span> · <b id="yo-puntos">0</b> pts</div>
+    </header>
+
+    <section id="bloque-estado" class="tarjeta bloque-estado">
+      <div id="estado-titulo" class="estado-titulo"></div>
+      <div id="estado-detalle" class="estado-detalle"></div>
+      <div id="reloj" class="reloj" hidden><span id="reloj-numero">15</span><small>seg</small></div>
+    </section>
+
+    <section id="bloque-anotarse" class="acciones" hidden>
+      <button id="btn-anotarme" class="boton boton-principal boton-grande">Anotarme</button>
+    </section>
+
+    <section id="bloque-prediccion" class="tarjeta" hidden>
+      <form id="form-prediccion" autocomplete="off">
+        <label class="campo">
+          <span id="prediccion-etiqueta">Tu predicción</span>
+          <input id="prediccion" type="text" maxlength="100" placeholder="Ej: 5 de diamantes" enterkeyhint="send">
+        </label>
+        <div class="rapidos" role="group" aria-label="Botones rápidos">
+          <button type="button" class="rapido rojo" data-tipo="color" data-valor="rojo">Rojo</button>
+          <button type="button" class="rapido negro" data-tipo="color" data-valor="negro">Negro</button>
+          <button type="button" class="rapido rojo palo" data-tipo="palo" data-valor="♥" aria-label="Corazones">♥</button>
+          <button type="button" class="rapido rojo palo" data-tipo="palo" data-valor="♦" aria-label="Diamantes">♦</button>
+          <button type="button" class="rapido negro palo" data-tipo="palo" data-valor="♠" aria-label="Picas">♠</button>
+          <button type="button" class="rapido negro palo" data-tipo="palo" data-valor="♣" aria-label="Tréboles">♣</button>
+          <button type="button" class="rapido joker" data-tipo="joker" data-valor="joker">🃏 Joker</button>
+        </div>
+        <p id="prediccion-aviso" class="error" role="status"></p>
+        <button id="btn-enviar" class="boton boton-principal boton-grande" type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <section id="bloque-carta" class="tarjeta bloque-carta" hidden>
+      <div class="bloque-subtitulo">Última carta</div>
+      <div class="fila-carta">
+        <div id="mini-carta" class="mini-carta"></div>
+        <div id="ultima-jugada" class="ultima-jugada"></div>
+      </div>
+    </section>
+
+    <section id="bloque-puntajes" class="tarjeta" hidden>
+      <div class="bloque-subtitulo">Puntajes <span id="objetivo-texto"></span></div>
+      <ol id="lista-puntajes" class="lista-puntajes"></ol>
+    </section>
+
+    <section id="bloque-salir" class="acciones" hidden>
+      <button id="btn-salir" class="boton boton-secundario">Salir de la mesa</button>
+    </section>
+  </main>
+
+  <script src="js/mazo.js"></script>
+  <script src="js/sala-conexion.js"></script>
+  <script src="js/jugador-rapidos.js"></script>
+  <script src="js/jugador.js"></script>
+</body>
+</html>

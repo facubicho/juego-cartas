@@ -402,4 +402,5 @@
   AL10.crearUI = crearUI;
   AL10.htmlCarta = htmlCarta;
   AL10.linkVisible = linkVisible;
+  AL10.svgQR = svgQR;
 })(typeof window !== 'undefined' ? window : globalThis);

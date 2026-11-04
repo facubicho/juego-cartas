@@ -24,11 +24,13 @@
           <div id="vista-espera" class="vista">
             <div class="cartel-grande">¿Te animás a adivinar la carta?</div>
             <button id="btn-abrir" class="boton boton-dorado">Abrir inscripción</button>
+            <!-- Solo aparece si la página la sirve el servidor de salas (npm run servidor) -->
+            <button id="btn-crear-sala" class="boton boton-sala" hidden>Crear sala online</button>
           </div>
 
           <!-- Inscripción -->
           <div id="vista-inscripcion" class="vista">
-            <div class="cartel-grande">Escribí <span class="comando">!jugar</span> en el chat</div>
+            <div id="cartel-inscripcion" class="cartel-grande">Escribí <span class="comando">!jugar</span> en el chat</div>
             <div class="cuenta-regresiva"><span id="inscripcion-segundos">60</span><small>seg</small></div>
             <div id="inscripcion-info" class="cartel-chico"></div>
             <button id="btn-empezar" class="boton boton-dorado">Empezar ya</button>
@@ -59,7 +61,21 @@
       </main>
 
       <aside class="panel-lateral">
-        <section class="tarjeta">
+        <!-- Modo sala online: código, link, QR y conectados -->
+        <section id="tarjeta-sala" class="tarjeta tarjeta-sala" hidden>
+          <div class="sala-fila">
+            <div id="sala-qr" class="sala-qr"></div>
+            <div class="sala-datos">
+              <div class="sala-titulo">Sala</div>
+              <div id="sala-codigo" class="sala-codigo"></div>
+              <div id="sala-link" class="sala-link"></div>
+              <button id="btn-copiar" class="boton-copiar">Copiar link</button>
+            </div>
+          </div>
+          <div class="sala-personas-titulo">Conectados: <span id="sala-cantidad">0</span></div>
+          <div id="sala-personas" class="sala-personas"></div>
+        </section>
+        <section id="tarjeta-como-jugar" class="tarjeta">
           <h2>Cómo jugar</h2>
           <ol>
             <li>Escribí <b class="comando">!jugar</b> (máximo <span class="max-jugadores">10</span> jugadores).</li>
@@ -88,6 +104,15 @@
         <span class="cafecito-texto">☕ Invitame un cafecito</span>
         <span class="cafecito-link"></span>
       </a>
+
+      <!-- Modo sala online: errores (sala cerrada, sin permiso...) -->
+      <div id="sala-error" class="overlay">
+        <div class="panel-sala-error">
+          <div id="sala-error-texto" class="sala-error-texto"></div>
+          <a class="boton boton-dorado" href="/">Volver al inicio</a>
+        </div>
+      </div>
+      <div class="aviso-reconectando">Reconectando con el servidor…</div>
 
       <div id="overlay-ganador" class="overlay">
         <div class="panel-ganador">
@@ -143,6 +168,8 @@
   <script src="js/chat.js"></script>
   <script src="js/chat-ws.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/sala-conexion.js"></script>
+  <script src="js/sala-anfitrion.js"></script>
   <script src="js/simulador.js"></script>
   <script src="js/app.js"></script>
 </body>
