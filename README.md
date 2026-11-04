@@ -162,7 +162,8 @@ Con `npm run chat:prueba-cortes` además simula que no estás en vivo al princip
 - **Sin respuesta:** pierde el turno. Con 2 turnos seguidos sin responder queda eliminado (el contador se reinicia al contestar a tiempo). Si hay lista de espera entra el siguiente (al final del orden).
 - **Puntos:** color 1, palo 2, número 3, acumulativos (pleno = 6). Solo cuenta lo anunciado.
   - Decir un palo implica su color (diamantes/corazones = rojo, picas/tréboles = negro): “diamantes” acertado suma 2 + 1 = 3 (color + palo) y “5 de diamantes” acertado es pleno (6).
-- **Joker:** anunció “joker” y sale el derecho → +10 y gana. Anunció “joker” y sale el de cabeza → −10 y queda eliminado. No lo anunció y sale cualquiera → +9. Anunció “joker” y sale una carta normal → 0.
+- **Joker:** anunció “joker” y sale el derecho → +10 y gana. Anunció “joker” y sale el de cabeza → −10 y queda eliminado. No lo anunció y sale el derecho → +9. No lo anunció y sale el de cabeza → −9 (no queda eliminado). Anunció “joker” y sale una carta normal → 0.
+  - El puntaje puede quedar por debajo de 0 y se muestra con el signo menos (se puede cambiar con `permitirPuntajeNegativo` en `js/config.js`).
 - **Ganar:** el primero en llegar a 10 o más (no existe pasarse). Si queda un solo jugador, gana.
 
 ### Textos que entiende

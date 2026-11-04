@@ -5,7 +5,8 @@
  *  - Solo se puntúa lo anunciado (anunciar un palo implica su color).
  *  - Joker anunciado + Joker derecho: +10 y gana.
  *  - Joker anunciado + Joker de cabeza: -10 y queda eliminado.
- *  - No anunció Joker y sale cualquier Joker: +9.
+ *  - No anunció Joker y sale el Joker derecho: +9.
+ *  - No anunció Joker y sale el Joker de cabeza: -9 (no queda eliminado).
  *  - Anunció Joker y sale carta normal: 0.
  *
  * Devuelve { puntos, aciertos: {color, palo, numero} (true/false/null = no anunciado),
@@ -17,7 +18,7 @@
 
   function puntosBase() {
     return (AL10.CONFIG_BASE && AL10.CONFIG_BASE.puntos) || {
-      color: 1, palo: 2, numero: 3, jokerAnunciadoDerecho: 10, jokerAnunciadoCabeza: -10, jokerNoAnunciado: 9
+      color: 1, palo: 2, numero: 3, jokerAnunciadoDerecho: 10, jokerAnunciadoCabeza: -10, jokerNoAnunciadoDerecho: 9, jokerNoAnunciadoCabeza: -9
     };
   }
 
@@ -32,7 +33,8 @@
         }
         return { puntos: P.jokerAnunciadoCabeza, aciertos: sinAciertos, pleno: false, efecto: 'eliminado', jokerSorpresa: false };
       }
-      return { puntos: P.jokerNoAnunciado, aciertos: sinAciertos, pleno: false, efecto: null, jokerSorpresa: true };
+      const puntos = carta.variante === 'derecho' ? P.jokerNoAnunciadoDerecho : P.jokerNoAnunciadoCabeza;
+      return { puntos: puntos, aciertos: sinAciertos, pleno: false, efecto: null, jokerSorpresa: true };
     }
 
     if (prediccion.joker) {

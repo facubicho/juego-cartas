@@ -15,6 +15,7 @@
     segundosTurno: 15,            // reloj de cada turno
     turnosSinResponderParaEliminar: 2,
     listaDeEspera: true,          // si alguien sale o es eliminado, entra el siguiente
+    permitirPuntajeNegativo: true, // false: el puntaje nunca baja de 0
     pausaRevelacionMs: 4000,      // tiempo mostrando la carta dada vuelta
     pausaTiempoAgotadoMs: 2000,   // pausa luego de "se acabó el tiempo"
     pausaMesaLlenaMs: 3000,       // pausa antes de arrancar cuando se llena la mesa
@@ -32,7 +33,8 @@
       numero: 3,
       jokerAnunciadoDerecho: 10,  // y gana la partida
       jokerAnunciadoCabeza: -10,  // y queda eliminado
-      jokerNoAnunciado: 9         // sale cualquier Joker sin haberlo anunciado
+      jokerNoAnunciadoDerecho: 9, // sale el Joker derecho sin haberlo anunciado
+      jokerNoAnunciadoCabeza: -9  // sale el Joker de cabeza sin haberlo anunciado (no elimina)
     }
   };
 

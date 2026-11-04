@@ -289,13 +289,45 @@ test('Joker de cabeza con 2 jugadores: el otro gana por quedar solo', () => {
   assert.equal(ctx.juego.ganador.nombre, 'b');
 });
 
-test('no anunció joker y sale cualquiera: +9 (sin ganar ni eliminar)', () => {
-  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA, JOKER_DERECHO] });
-  jugar(ctx, 'rojo');
+test('no anunció joker y sale el Joker derecho: +9 (sin ganar ni eliminar)', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_DERECHO] });
   jugar(ctx, '5 de picas');
   assert.equal(ctx.juego.jugadores[0].puntos, 9);
-  assert.equal(ctx.juego.jugadores[1].puntos, 9);
   assert.equal(ctx.juego.fase, 'jugando');
+});
+
+test('no anunció joker y sale el Joker de cabeza: -9, sigue en la mesa y el puntaje puede ser negativo', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA] });
+  ctx.juego.jugadores[0].puntos = 4;
+  jugar(ctx, 'rojo');
+  assert.equal(ctx.juego.jugadores.length, 2);
+  assert.equal(ctx.juego.jugadores[0].nombre, 'a');
+  assert.equal(ctx.juego.jugadores[0].puntos, -5);
+  assert.equal(ctx.juego.eliminados.length, 0);
+  assert.equal(ctx.juego.fase, 'jugando');
+  assert.equal(turnoDe(ctx.juego), 'b');
+});
+
+test('con 0 puntos, el Joker de cabeza sin anunciar deja -9', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA] });
+  jugar(ctx, '7');
+  assert.equal(ctx.juego.jugadores[0].puntos, -9);
+});
+
+test('con permitirPuntajeNegativo en false el puntaje no baja de 0', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA], config: { permitirPuntajeNegativo: false } });
+  ctx.juego.jugadores[0].puntos = 4;
+  jugar(ctx, 'rojo');
+  assert.equal(ctx.juego.jugadores[0].puntos, 0);
+});
+
+test('desde negativo se puede seguir sumando hasta ganar', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA, carta(2, 'treboles'), JOKER_DERECHO] });
+  jugar(ctx, 'rojo');            // a: -9
+  jugar(ctx, '7');               // b
+  jugar(ctx, 'joker');           // a: -9 + 10 = 1, pero gana por Joker derecho anunciado
+  assert.equal(ctx.juego.ganador.nombre, 'a');
+  assert.equal(ctx.juego.ganador.puntos, 1);
 });
 
 test('Joker sorpresa puede hacer ganar si llega a 10', () => {
