@@ -506,6 +506,9 @@ body.sin-dev .btn-dev, body.sin-dev .panel-dev { display: none; }
   border: 2px solid rgba(244,196,48,.6);
   font-size: 24px;
   z-index: 5;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
 .cafecito-texto { font-weight: 800; color: var(--dorado); }
 .cafecito-link { font-weight: 700; color: #fff; }
@@ -532,7 +535,7 @@ body.sin-cafecito .ganador-cafecito { display: none; }
   background: #fff;
 }
 .cafecito-qr svg { display: block; width: 100%; height: 100%; }
-.gc-link { font-size: 27px; font-weight: 800; color: var(--dorado); white-space: nowrap; }
+.gc-link { display: block; font-size: 27px; font-weight: 800; color: var(--dorado); white-space: nowrap; text-decoration: none; cursor: pointer; }
 
 .aviso-cafe { border-left: 8px solid #a1683a; background: rgba(60,30,10,.85); }
 

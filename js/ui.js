@@ -377,6 +377,7 @@
       document.body.classList.toggle('sin-cafecito', !activo);
       if (!activo) return;
       document.querySelectorAll('.cafecito-link').forEach((el) => { el.textContent = linkVisible(c.url); });
+      document.querySelectorAll('a.cafecito-enlace').forEach((el) => { el.href = c.url; }); // el link sale de js/config.js
       $('cafecito-qr').innerHTML = svgQR(c.url);
     }
 
