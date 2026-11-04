@@ -1,0 +1,19 @@
+# Configuración para publicar el servidor en Render (https://render.com) como "Blueprint".
+# No tiene claves ni datos personales: todo lo que necesita está acá.
+services:
+  - type: web
+    name: juego-cartas-online
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/salud
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: MAX_SALAS
+        value: "50"
+      - key: SALA_INACTIVA_MINUTOS
+        value: "120"
+      - key: MENSAJES_POR_SEGUNDO
+        value: "3"

@@ -1,9 +1,11 @@
 {
-  "name": "juego-cartas",
-  "version": "2.0.0",
-  "description": "Adiviná y llegá a 10: juego de cartas para lives de TikTok",
+  "name": "juego-cartas-online",
+  "version": "3.0.0",
+  "description": "Adiviná y llegá a 10 — versión online: salas para jugar desde el celular (y modo TikTok LIVE)",
   "private": true,
   "scripts": {
+    "start": "node servidor/index.js",
+    "servidor": "node servidor/index.js",
     "test": "node --test \"tests/**/*.test.js\"",
     "conector": "node conector/index.js",
     "chat:prueba": "node conector/index.js --prueba",

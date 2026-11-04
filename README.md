@@ -1,12 +1,82 @@
-# Adiviná y llegá a 10
+# Adiviná y llegá a 10 — versión online
 
-Juego web de cartas pensado para mostrarse en un live de TikTok (pantalla 16:9, para capturar con OBS o TikTok LIVE Studio).
+Juego web de cartas para jugar con amigos **desde el celular, entrando por un link** (modo sala online), o para mostrar en un live de TikTok (pantalla 16:9, para capturar con OBS o TikTok LIVE Studio).
 
+- **Modo sala online:** el anfitrión crea una sala, manda el link por WhatsApp y cada amigo juega desde su celular. Ver [Modo sala online](#modo-sala-online).
 - Se puede probar **sin estar en vivo** con el simulador de chat que trae la página.
 - Con el **conector** (carpeta `conector/`), los comentarios de tu live de TikTok llegan al juego.
 - Muestra un cartel de **Cafecito** (☕ Invitame un cafecito) y un código QR en la pantalla del ganador.
 
 > **Aviso importante.** El conector usa [TikTok-Live-Connector](https://github.com/zerodytrash/TikTok-Live-Connector), una librería **no oficial**: TikTok no la hizo ni la mantiene. Puede dejar de funcionar en cualquier momento si TikTok cambia algo. Para conectarse, la librería usa un servicio externo de firma (Euler Stream). **Antes de transmitir, revisá los términos de servicio y las normas de la comunidad de TikTok** (y las reglas de TikTok LIVE sobre juegos y links externos) para asegurarte de que podés usarlo en tu cuenta.
+
+## Modo sala online
+
+Para jugar con amigos sin TikTok: cada uno usa su celular y la mesa completa se ve en la pantalla del anfitrión (que podés compartir en una videollamada o proyectar en la tele).
+
+### Cómo se juega
+
+1. El **anfitrión** abre el juego (desde el servidor, ver abajo) y toca **Crear sala online**. Aparece un **código de 4 letras** (por ejemplo `PJER`), el **link** de la sala, un **código QR** y el botón **Copiar link**.
+2. Manda el link por WhatsApp (o los amigos escanean el QR). Cada uno lo abre en el celular, escribe su **nombre** (máximo 20 letras) y toca **Entrar**. Si el nombre ya lo usa otra persona en la sala, le pide otro.
+3. El anfitrión toca **Abrir inscripción**. En el celular aparece el botón **Anotarme** (es lo mismo que escribir `!jugar`). Entran los primeros 10; los demás quedan en la lista de espera.
+4. El anfitrión toca **Empezar ya** (o espera la cuenta regresiva).
+5. En su turno, cada jugador escribe su predicción (por ejemplo `5 de diamantes`) o usa los botones rápidos **Rojo, Negro, ♥ ♦ ♠ ♣, Joker**, y toca **Enviar**. Tiene 15 segundos. Fuera de su turno ve de quién es el turno, el reloj, la última carta y los puntajes.
+6. Al terminar, el anfitrión toca **Nueva inscripción** para jugar otra.
+
+Las reglas son las mismas de siempre. Si un celular se desconecta (se bloqueó la pantalla, se cortó la wifi), al volver a abrir el link **recupera su lugar y sus puntos**: el navegador guarda un identificador del dispositivo.
+
+### Probarlo en tu PC (y desde los celulares de tu casa)
+
+1. Instalá Node.js e instalá las dependencias (pasos 1 a 3 de la guía de TikTok, más abajo: [instalar Node.js](#1-instalar-nodejs), [descargar el juego](#2-descargar-el-juego) e [instalar las dependencias](#3-instalar-las-dependencias)).
+2. En la ventana negra, en la carpeta del juego, escribí:
+   ```bash
+   npm run servidor
+   ```
+3. Aparece algo así:
+   ```
+   En esta PC:          http://localhost:3000
+   Desde la misma wifi: http://192.168.0.15:3000
+   ```
+   Dejá esa ventana abierta mientras juegan (para apagarlo: Ctrl+C).
+4. En la PC abrí `http://localhost:3000` y tocá **Crear sala online**.
+5. **Celulares en la misma wifi:** el link y el QR de la sala ya traen la dirección de tu PC en la wifi (por ejemplo `http://192.168.0.15:3000/s/PJER`), aunque en la PC lo hayas abierto como `localhost`. Mandá ese link o escaneá el QR con el celular.
+6. Si Windows pregunta si permitís que Node.js use la red, elegí **Redes privadas** y **Permitir**. Si los celulares no cargan la página, revisá que estén en la misma wifi que la PC (no en datos móviles).
+
+### Publicarlo en internet (Render)
+
+Así tus amigos pueden entrar desde cualquier lado, no solo desde tu wifi. El proyecto ya trae la configuración (`render.yaml`): no hace falta tocar código ni poner claves.
+
+1. Creá una cuenta gratis en <https://render.com> (podés entrar con tu cuenta de GitHub).
+2. En el panel de Render tocá **New +** → **Blueprint**.
+3. Conectá tu cuenta de GitHub y elegí este repositorio.
+4. Render lee `render.yaml` y muestra el servicio **juego-cartas-online**. Tocá **Apply** (o **Deploy Blueprint**).
+5. Esperá unos minutos a que diga **Live**. Arriba aparece la dirección pública, algo como `https://juego-cartas-online.onrender.com`.
+6. Abrí esa dirección, tocá **Crear sala online** y mandá el link.
+
+Cada vez que se sube un cambio a la rama principal, Render lo vuelve a publicar solo.
+
+**Railway** (alternativa): en <https://railway.app> → **New Project** → **Deploy from GitHub repo** → elegí el repositorio. Railway detecta Node.js y usa `npm start`. Después, en **Settings → Networking**, tocá **Generate Domain** para tener la dirección pública.
+
+> **Aviso sobre los planes gratuitos.** Algunos planes gratis (como el de Render) **apagan el servidor después de un rato sin uso** (unos 15 minutos). La primera visita después de eso puede tardar **hasta un minuto** en cargar mientras se vuelve a prender. Además, las salas se guardan solo en memoria: si el servidor se apaga o se reinicia, **las salas abiertas se pierden** y hay que crear una nueva.
+
+### Configuración del servidor (opcional)
+
+Se cambian con variables de entorno (en Render: **Environment**). Ninguna es secreta.
+
+| Variable | Qué hace | Por defecto |
+|---|---|---|
+| `PORT` | Puerto (Render y Railway lo ponen solos) | 3000 |
+| `MAX_SALAS` | Salas abiertas al mismo tiempo | 50 |
+| `SALA_INACTIVA_MINUTOS` | Una sala sin actividad se borra sola | 120 |
+| `MENSAJES_POR_SEGUNDO` | Mensajes por segundo por jugador (el resto se rechaza) | 3 |
+
+### Seguridad y datos
+
+- El **servidor es la autoridad**: las reglas corren solo ahí. Los celulares mandan su texto y reciben el estado.
+- Se guarda **solo el nombre elegido**, en memoria, mientras dura la sala. No hay cuentas ni base de datos.
+- Todo texto de los jugadores (nombres y mensajes) se limpia en el servidor (espacios, caracteres invisibles, máximo 20 caracteres para el nombre y 100 para el mensaje) y se muestra siempre como texto, nunca como código.
+- Límites: 10 jugadores por sala (más quedan en la lista de espera), 40 pantallas conectadas por sala, máximo de salas configurable y de mensajes por segundo por jugador.
+- Solo el navegador que creó la sala puede manejarla (guarda una clave en ese navegador).
+- El servidor sirve únicamente las páginas, `css/` y `js/`: nunca el código del servidor, el conector, el `.env` ni las dependencias.
 
 ## Cómo abrir el juego (solo con el simulador)
 
@@ -196,6 +266,19 @@ conector/limitador.js    Límite de mensajes por segundo
 conector/reconexion.js   Reconexión con espera creciente
 conector/puente.js       Limpia, limita y reenvía los comentarios al juego
 conector/servidor-ws.js  WebSocket local (127.0.0.1) hacia la página
+jugador.html             Pantalla del jugador del modo sala online (celular)
+css/jugador.css          Estilos de la pantalla del jugador
+js/jugador.js            Pantalla del jugador: entrar, anotarse, predecir
+js/jugador-rapidos.js    Botones rápidos (Rojo, Negro, ♥ ♦ ♠ ♣, Joker)
+js/sala-conexion.js      Conexión con el servidor de salas y "motor remoto" para la mesa del anfitrión
+js/sala-anfitrion.js     Pantalla del anfitrión: crear sala, link, QR, conectados
+servidor/index.js        Servidor del modo sala online (npm run servidor / npm start)
+servidor/app.js          HTTP (páginas) + WebSocket (/ws) en el mismo puerto
+servidor/salas.js        Salas: nombres, límites, expiración, una partida por sala
+servidor/conexiones.js   Mensajes entre las pantallas y las salas
+servidor/estaticos.js    Archivos que se sirven (solo páginas, css/ y js/)
+servidor/motor.js        Carga en Node el mismo motor de reglas de la página
+render.yaml              Configuración para publicar en Render
 tests/                   Tests automáticos (node:test)
 ```
 
@@ -215,4 +298,4 @@ Requieren Node 20 o superior y haber corrido `npm install` una vez:
 npm test
 ```
 
-Cubren las reglas del juego (puntuación, Joker, victoria, turnos, eliminación, lista de espera, interpretación del texto, límite de 10 jugadores), el comando `!cafecito` y su límite de una vez por minuto, la identificación por usuario único, y el conector sin conectarse a TikTok: limpieza de textos, límite de mensajes por segundo, reconexión, configuración y reenvío de punta a punta (WebSocket → página → juego).
+Cubren el modo sala online (crear sala, unirse, nombres repetidos, límite de 10 y espectadores, turnos y tiempo, desconexión y reconexión, limpieza de textos, límite de mensajes, expiración de salas, archivos servidos y una partida completa con varios clientes simulados), las reglas del juego (puntuación, Joker, victoria, turnos, eliminación, lista de espera, interpretación del texto, límite de 10 jugadores), el comando `!cafecito` y su límite de una vez por minuto, la identificación por usuario único, y el conector sin conectarse a TikTok: limpieza de textos, límite de mensajes por segundo, reconexión, configuración y reenvío de punta a punta (WebSocket → página → juego).
