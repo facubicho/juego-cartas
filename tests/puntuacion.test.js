@@ -83,14 +83,21 @@ test('Joker anunciado + Joker de cabeza: -10 y eliminado', () => {
   assert.equal(r.efecto, 'eliminado');
 });
 
-test('no anunció Joker y sale cualquiera de los dos: +9', () => {
-  for (const j of [JOKER_DERECHO, JOKER_CABEZA]) {
-    for (const t of ['rojo', '5 de diamantes', 'picas', '7']) {
-      const r = puntos(t, j);
-      assert.equal(r.puntos, 9, t + ' / ' + j.variante);
-      assert.equal(r.efecto, null);
-      assert.equal(r.jokerSorpresa, true);
-    }
+test('no anunció Joker y sale el Joker derecho: +9', () => {
+  for (const t of ['rojo', '5 de diamantes', 'picas', '7']) {
+    const r = puntos(t, JOKER_DERECHO);
+    assert.equal(r.puntos, 9, t);
+    assert.equal(r.efecto, null);
+    assert.equal(r.jokerSorpresa, true);
+  }
+});
+
+test('no anunció Joker y sale el Joker de cabeza: -9 (sin eliminación)', () => {
+  for (const t of ['rojo', '5 de diamantes', 'picas', '7']) {
+    const r = puntos(t, JOKER_CABEZA);
+    assert.equal(r.puntos, -9, t);
+    assert.equal(r.efecto, null);
+    assert.equal(r.jokerSorpresa, true);
   }
 });
 

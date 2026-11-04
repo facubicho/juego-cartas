@@ -337,6 +337,7 @@
       const carta = this._sacarCarta();
       const resultado = AL10.calcularPuntos(prediccion, carta, this.config.puntos);
       jugador.puntos += resultado.puntos;
+      if (!this.config.permitirPuntajeNegativo && jugador.puntos < 0) jugador.puntos = 0;
       jugador.sinResponder = 0;
       jugador.jugadas++;
       this.subfase = 'revelando';

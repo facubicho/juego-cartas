@@ -24,7 +24,7 @@ Por ejemplo: `index.html?dev=0&chat=8080`.
 | `chat=8080` | Recibe el chat del live desde el conector (también acepta `chat=ws://localhost:8080`) | sin chat real |
 | `cafecito=0` | Oculta el cartel de Cafecito y desactiva `!cafecito` | visible |
 | `objetivo` | Puntos para ganar | 10 |
-| `turno` | Segundos por turno | 10 |
+| `turno` | Segundos por turno | 15 |
 | `inscripcion` | Segundos de inscripción | 60 |
 | `max` | Lugares en la mesa | 10 |
 | `espera=0` | Desactiva la lista de espera | activada |
@@ -158,11 +158,12 @@ Con `npm run chat:prueba-cortes` además simula que no estás en vivo al princip
   - **Joker derecho** (siempre al derecho): es el que suma.
   - **Joker de cabeza** (siempre rotado 180°): es el que resta.
 - **Inscripción:** `!jugar`. Máximo 10 por orden de llegada; del 11 en adelante, *Mesa llena* (lista de espera o espectador). Cuenta regresiva de 60 s o hasta llenar la mesa. Mínimo 2 jugadores (si no se llega, se extiende la inscripción). `!salir` para dejar la mesa o la lista de espera. `!cafecito` muestra el link de Cafecito.
-- **Turnos:** en el orden en que se anotaron, siempre en el mismo sentido. 10 s por turno. Solo cuenta el jugador del turno y su primera predicción válida; las inválidas o ambiguas se ignoran y puede reintentar mientras haya tiempo.
+- **Turnos:** en el orden en que se anotaron, siempre en el mismo sentido. 15 s por turno. Solo cuenta el jugador del turno y su primera predicción válida; las inválidas o ambiguas se ignoran y puede reintentar mientras haya tiempo.
 - **Sin respuesta:** pierde el turno. Con 2 turnos seguidos sin responder queda eliminado (el contador se reinicia al contestar a tiempo). Si hay lista de espera entra el siguiente (al final del orden).
 - **Puntos:** color 1, palo 2, número 3, acumulativos (pleno = 6). Solo cuenta lo anunciado.
   - Decir un palo implica su color (diamantes/corazones = rojo, picas/tréboles = negro): “diamantes” acertado suma 2 + 1 = 3 (color + palo) y “5 de diamantes” acertado es pleno (6).
-- **Joker:** anunció “joker” y sale el derecho → +10 y gana. Anunció “joker” y sale el de cabeza → −10 y queda eliminado. No lo anunció y sale cualquiera → +9. Anunció “joker” y sale una carta normal → 0.
+- **Joker:** anunció “joker” y sale el derecho → +10 y gana. Anunció “joker” y sale el de cabeza → −10 y queda eliminado. No lo anunció y sale el derecho → +9. No lo anunció y sale el de cabeza → −9 (no queda eliminado). Anunció “joker” y sale una carta normal → 0.
+  - El puntaje puede quedar por debajo de 0 y se muestra con el signo menos (se puede cambiar con `permitirPuntajeNegativo` en `js/config.js`).
 - **Ganar:** el primero en llegar a 10 o más (no existe pasarse). Si queda un solo jugador, gana.
 
 ### Textos que entiende

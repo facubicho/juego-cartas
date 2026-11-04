@@ -32,6 +32,12 @@
     fueraDeRango: 'número fuera de rango (1 a 13)'
   };
 
+  /** Puntos con signo menos tipográfico (y + opcional): -9 -> "−9", 9 -> "+9". */
+  function pts(n, conMas) {
+    if (n < 0) return '−' + Math.abs(n);
+    return (conMas && n > 0 ? '+' : '') + n;
+  }
+
   /* ---------- Carta ---------- */
 
   const SVG_JOKER =
@@ -105,6 +111,8 @@
     $('titulo-objetivo').textContent = cfg.puntajeObjetivo;
     document.querySelectorAll('.objetivo').forEach((el) => { el.textContent = cfg.puntajeObjetivo; });
     document.querySelectorAll('.max-jugadores').forEach((el) => { el.textContent = cfg.maxJugadores; });
+    document.querySelectorAll('.segundos-turno').forEach((el) => { el.textContent = cfg.segundosTurno; });
+    document.querySelectorAll('.resta-cabeza').forEach((el) => { el.textContent = Math.abs(cfg.puntos.jokerNoAnunciadoCabeza); });
     document.querySelectorAll('.comando').forEach((el) => { el.textContent = cfg.comandoJugar; });
     document.title = 'Adiviná y llegá a ' + cfg.puntajeObjetivo;
     dibujarTablaPuntos(cfg);
@@ -145,6 +153,9 @@
           break;
         case 'revelacion':
           revelarCarta(datos.carta);
+          if (datos.resultado.jokerSorpresa && datos.resultado.puntos < 0) {
+            aviso('🙃 Joker de cabeza sin anunciar: @' + datos.nombre + ' pierde ' + Math.abs(datos.resultado.puntos) + ' puntos (' + pts(datos.resultado.puntos) + ')', 'error');
+          }
           break;
         case 'jugadorEliminado':
           aviso('@' + datos.nombre + ' sale de la mesa: ' + (MOTIVOS_ELIMINACION[datos.motivo] || datos.motivo), 'error');
@@ -237,16 +248,18 @@
           continue;
         }
         const progreso = Math.max(0, Math.min(100, (j.puntos / cfg.puntajeObjetivo) * 100));
+        const restaRecien = e.subfase === 'revelando' && e.ultimaJugada && e.ultimaJugada.nombre === j.nombre &&
+          e.ultimaJugada.resultado && e.ultimaJugada.resultado.puntos < 0;
         const esGanador = e.ganador && e.ganador === j.nombre;
         const alerta = j.sinResponder > 0
           ? '<span class="asiento-alerta" title="Turnos sin responder">⏰ ' + j.sinResponder + '/' + cfg.turnosSinResponderParaEliminar + '</span>'
           : '';
         html +=
-          '<div class="asiento' + (j.esTurno ? ' turno' : '') + (esGanador ? ' ganador' : '') + '" style="' + estilo + '">' +
+          '<div class="asiento' + (j.esTurno ? ' turno' : '') + (esGanador ? ' ganador' : '') + (restaRecien ? ' resta' : '') + '" style="' + estilo + '">' +
             '<span class="asiento-orden">' + j.orden + '</span>' +
             alerta +
             '<div class="asiento-nombre">@' + esc(j.nombre) + '</div>' +
-            '<div class="asiento-puntos">' + j.puntos + '<small> pts</small></div>' +
+            '<div class="asiento-puntos' + (j.puntos < 0 ? ' negativo' : '') + '">' + pts(j.puntos) + '<small> pts</small></div>' +
             '<div class="asiento-barra"><i style="width:' + progreso + '%"></i></div>' +
           '</div>';
       }
@@ -306,16 +319,17 @@
       $('prediccion').innerHTML = chips;
 
       let titulo, clase = r.puntos > 0 ? 'res-bueno' : r.puntos < 0 ? 'res-malo' : 'res-neutro';
-      if (r.efecto === 'gana') titulo = '¡JOKER DERECHO!<br>+' + r.puntos + ' y gana';
-      else if (r.efecto === 'eliminado') titulo = 'JOKER DE CABEZA<br>' + r.puntos + ' y queda eliminado';
-      else if (r.jokerSorpresa) titulo = '¡Joker sorpresa!<br>+' + r.puntos;
-      else if (r.pleno) titulo = '¡PLENO!<br>+' + r.puntos;
-      else titulo = (r.puntos > 0 ? '+' : '') + r.puntos + (r.puntos === 1 ? ' punto' : ' puntos');
+      if (r.efecto === 'gana') titulo = '¡JOKER DERECHO!<br>' + pts(r.puntos, true) + ' y gana';
+      else if (r.efecto === 'eliminado') titulo = 'JOKER DE CABEZA<br>' + pts(r.puntos) + ' y queda eliminado';
+      else if (r.jokerSorpresa && r.puntos < 0) { titulo = '¡Joker de cabeza!<br>' + pts(r.puntos) + ' puntos'; clase += ' res-resta'; }
+      else if (r.jokerSorpresa) titulo = '¡Joker sorpresa!<br>' + pts(r.puntos, true);
+      else if (r.pleno) titulo = '¡PLENO!<br>' + pts(r.puntos, true);
+      else titulo = pts(r.puntos, true) + (r.puntos === 1 ? ' punto' : ' puntos');
 
       $('resultado').innerHTML =
         '<div class="res-carta">' + esc(AL10.describirCarta(c)) + '</div>' +
         '<div class="res-titulo ' + clase + '">' + titulo + '</div>' +
-        '<div class="res-detalle">Total: <b>' + u.puntosTotales + '</b> pts</div>';
+        '<div class="res-detalle">Total: <b>' + pts(u.puntosTotales) + '</b> pts</div>';
     }
 
     function dibujarGanador(e) {
@@ -327,7 +341,7 @@
         '<tr><th>#</th><th>Jugador</th><th>Puntos</th><th>Estado</th></tr>' +
         e.resumen.map((f, i) =>
           '<tr class="' + (f.estado === 'ganador' ? 'fila-ganador' : f.estado === 'eliminado' ? 'fila-eliminado' : '') + '">' +
-            '<td>' + (i + 1) + '</td><td>@' + esc(f.nombre) + '</td><td>' + f.puntos + '</td>' +
+            '<td>' + (i + 1) + '</td><td>@' + esc(f.nombre) + '</td><td>' + pts(f.puntos) + '</td>' +
             '<td>' + (f.estado === 'ganador' ? '🏆 Ganador' : f.estado === 'eliminado' ? 'Eliminado (' + (MOTIVOS_ELIMINACION[f.motivo] || f.motivo) + ')' : 'En mesa') + '</td>' +
           '</tr>').join('');
     }
@@ -363,7 +377,8 @@
         ['Pleno <small>(número + palo)</small>', '+' + (P.color + P.palo + P.numero)],
         ['Dijiste “joker” y sale el <b>Joker derecho</b>', '+' + P.jokerAnunciadoDerecho + ' ¡gana!', 'fila-joker'],
         ['Dijiste “joker” y sale el <b>Joker de cabeza</b>', P.jokerAnunciadoCabeza + ' eliminado', 'fila-joker'],
-        ['Sale un Joker sin anunciarlo', '+' + P.jokerNoAnunciado, 'fila-joker']
+        ['Sale el <b>Joker derecho</b> sin anunciarlo', pts(P.jokerNoAnunciadoDerecho, true), 'fila-joker'],
+        ['Sale el <b>Joker de cabeza</b> sin anunciarlo', pts(P.jokerNoAnunciadoCabeza), 'fila-joker']
       ];
       $('tabla-puntos').innerHTML = filas.map((f) =>
         '<tr class="' + (f[2] || '') + '"><td>' + f[0] + '</td><td>' + f[1].replace('-', '−') + '</td></tr>').join('');

@@ -122,9 +122,28 @@ test('una predicción inválida se ignora y puede reintentar mientras haya tiemp
   assert.equal(ctx.juego.jugadores[0].puntos, 6);
 });
 
+test('el turno dura 15 segundos por defecto', () => {
+  const ctx = partidaCon(['a', 'b']);
+  assert.equal(ctx.juego.config.segundosTurno, 15);
+  ctx.reloj.avanzar(14999);
+  assert.equal(ctx.juego.subfase, 'turno');
+  assert.equal(ctx.juego.recibirMensaje('a', 'rojo').accion, 'prediccion'); // a los 14,9 s todavía vale
+  ctx.reloj.avanzar(ctx.juego.config.pausaRevelacionMs);
+  ctx.reloj.avanzar(14999);
+  assert.equal(ctx.juego.subfase, 'turno');
+  ctx.reloj.avanzar(1);
+  assert.equal(ctx.juego.subfase, 'pausa'); // a los 15 s se acabó el tiempo de b
+});
+
+test('el tiempo por turno se puede cambiar por configuración', () => {
+  const ctx = partidaCon(['a', 'b'], { config: { segundosTurno: 10 } });
+  ctx.reloj.avanzar(10000);
+  assert.equal(ctx.juego.subfase, 'pausa');
+});
+
 test('si se acaba el tiempo pierde el turno sin puntos y sigue el siguiente', () => {
   const ctx = partidaCon(['a', 'b']);
-  ctx.reloj.avanzar(10000);
+  ctx.reloj.avanzar(15000);
   assert.equal(ctx.juego.subfase, 'pausa');
   assert.equal(ctx.juego.recibirMensaje('a', 'rojo').accion, 'ignorado'); // ya tarde
   ctx.reloj.avanzar(ctx.juego.config.pausaTiempoAgotadoMs);
@@ -270,13 +289,45 @@ test('Joker de cabeza con 2 jugadores: el otro gana por quedar solo', () => {
   assert.equal(ctx.juego.ganador.nombre, 'b');
 });
 
-test('no anunció joker y sale cualquiera: +9 (sin ganar ni eliminar)', () => {
-  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA, JOKER_DERECHO] });
-  jugar(ctx, 'rojo');
+test('no anunció joker y sale el Joker derecho: +9 (sin ganar ni eliminar)', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_DERECHO] });
   jugar(ctx, '5 de picas');
   assert.equal(ctx.juego.jugadores[0].puntos, 9);
-  assert.equal(ctx.juego.jugadores[1].puntos, 9);
   assert.equal(ctx.juego.fase, 'jugando');
+});
+
+test('no anunció joker y sale el Joker de cabeza: -9, sigue en la mesa y el puntaje puede ser negativo', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA] });
+  ctx.juego.jugadores[0].puntos = 4;
+  jugar(ctx, 'rojo');
+  assert.equal(ctx.juego.jugadores.length, 2);
+  assert.equal(ctx.juego.jugadores[0].nombre, 'a');
+  assert.equal(ctx.juego.jugadores[0].puntos, -5);
+  assert.equal(ctx.juego.eliminados.length, 0);
+  assert.equal(ctx.juego.fase, 'jugando');
+  assert.equal(turnoDe(ctx.juego), 'b');
+});
+
+test('con 0 puntos, el Joker de cabeza sin anunciar deja -9', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA] });
+  jugar(ctx, '7');
+  assert.equal(ctx.juego.jugadores[0].puntos, -9);
+});
+
+test('con permitirPuntajeNegativo en false el puntaje no baja de 0', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA], config: { permitirPuntajeNegativo: false } });
+  ctx.juego.jugadores[0].puntos = 4;
+  jugar(ctx, 'rojo');
+  assert.equal(ctx.juego.jugadores[0].puntos, 0);
+});
+
+test('desde negativo se puede seguir sumando hasta ganar', () => {
+  const ctx = partidaCon(['a', 'b'], { cartas: [JOKER_CABEZA, carta(2, 'treboles'), JOKER_DERECHO] });
+  jugar(ctx, 'rojo');            // a: -9
+  jugar(ctx, '7');               // b
+  jugar(ctx, 'joker');           // a: -9 + 10 = 1, pero gana por Joker derecho anunciado
+  assert.equal(ctx.juego.ganador.nombre, 'a');
+  assert.equal(ctx.juego.ganador.puntos, 1);
 });
 
 test('Joker sorpresa puede hacer ganar si llega a 10', () => {
