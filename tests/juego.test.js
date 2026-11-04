@@ -122,9 +122,28 @@ test('una predicción inválida se ignora y puede reintentar mientras haya tiemp
   assert.equal(ctx.juego.jugadores[0].puntos, 6);
 });
 
+test('el turno dura 15 segundos por defecto', () => {
+  const ctx = partidaCon(['a', 'b']);
+  assert.equal(ctx.juego.config.segundosTurno, 15);
+  ctx.reloj.avanzar(14999);
+  assert.equal(ctx.juego.subfase, 'turno');
+  assert.equal(ctx.juego.recibirMensaje('a', 'rojo').accion, 'prediccion'); // a los 14,9 s todavía vale
+  ctx.reloj.avanzar(ctx.juego.config.pausaRevelacionMs);
+  ctx.reloj.avanzar(14999);
+  assert.equal(ctx.juego.subfase, 'turno');
+  ctx.reloj.avanzar(1);
+  assert.equal(ctx.juego.subfase, 'pausa'); // a los 15 s se acabó el tiempo de b
+});
+
+test('el tiempo por turno se puede cambiar por configuración', () => {
+  const ctx = partidaCon(['a', 'b'], { config: { segundosTurno: 10 } });
+  ctx.reloj.avanzar(10000);
+  assert.equal(ctx.juego.subfase, 'pausa');
+});
+
 test('si se acaba el tiempo pierde el turno sin puntos y sigue el siguiente', () => {
   const ctx = partidaCon(['a', 'b']);
-  ctx.reloj.avanzar(10000);
+  ctx.reloj.avanzar(15000);
   assert.equal(ctx.juego.subfase, 'pausa');
   assert.equal(ctx.juego.recibirMensaje('a', 'rojo').accion, 'ignorado'); // ya tarde
   ctx.reloj.avanzar(ctx.juego.config.pausaTiempoAgotadoMs);

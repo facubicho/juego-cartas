@@ -12,7 +12,7 @@
     maxJugadores: 10,             // lugares en la mesa
     minJugadores: 2,              // mínimo para empezar
     segundosInscripcion: 60,      // cuenta regresiva de inscripción
-    segundosTurno: 10,            // reloj de cada turno
+    segundosTurno: 15,            // reloj de cada turno
     turnosSinResponderParaEliminar: 2,
     listaDeEspera: true,          // si alguien sale o es eliminado, entra el siguiente
     pausaRevelacionMs: 4000,      // tiempo mostrando la carta dada vuelta
