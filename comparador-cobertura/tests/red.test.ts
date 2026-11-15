@@ -39,4 +39,10 @@ describe("lectura respetando robots.txt", () => {
     await expect(lector.leer(URLS.clarin)).rejects.toBeInstanceOf(NoDisponible);
     expect(f.pedidos.some((p) => p.url === URLS.clarin)).toBe(false);
   });
+
+  it("si el sitio no responde, lo informa como tal (no como bloqueo de robots.txt)", async () => {
+    const lector = new LectorWeb({ fetchImpl: async () => { throw new TypeError("fetch failed"); }, sinEsperas: true });
+    const e = await lector.leer(URLS.infobae).catch((x) => x);
+    expect(e.motivo).toBe("el sitio no respondió");
+  });
 });

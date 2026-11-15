@@ -15,6 +15,7 @@ export class NoDisponible extends Error {
 }
 
 type Robots = ReturnType<typeof robotsParser>;
+type Bloqueo = { bloqueado: string };
 
 export interface OpcionesLector {
   fetchImpl?: FetchFn;
@@ -29,7 +30,7 @@ export interface OpcionesLector {
  * respeta el crawl-delay de cada sitio y nunca manda cookies ni credenciales.
  */
 export class LectorWeb {
-  private robots = new Map<string, Promise<Robots | "bloqueado">>();
+  private robots = new Map<string, Promise<Robots | Bloqueo>>();
   private ultimoPedido = new Map<string, number>();
   private fetchImpl: FetchFn;
   readonly userAgent: string;
@@ -61,7 +62,7 @@ export class LectorWeb {
     }
   }
 
-  private cargarRobots(origen: string): Promise<Robots | "bloqueado"> {
+  private cargarRobots(origen: string): Promise<Robots | Bloqueo> {
     let p = this.robots.get(origen);
     if (!p) {
       const urlRobots = `${origen}/robots.txt`;
@@ -71,12 +72,14 @@ export class LectorWeb {
           res = await this.pedir(urlRobots);
         } catch {
           // Si ni siquiera responde robots.txt, no seguimos con ese sitio.
-          return "bloqueado" as const;
+          return { bloqueado: "el sitio no respondió" };
         }
-        if (res.status === 401 || res.status === 403) return "bloqueado" as const;
+        if (res.status === 401 || res.status === 403) {
+          return { bloqueado: `el sitio bloqueó el acceso automático (HTTP ${res.status})` };
+        }
         // 404 u otro 4xx: no hay reglas, se permite (criterio estándar de robots.txt).
         const texto = res.ok ? await res.text() : "";
-        if (res.status >= 500) return "bloqueado" as const;
+        if (res.status >= 500) return { bloqueado: `el sitio no está respondiendo bien (HTTP ${res.status})` };
         return robotsParser(urlRobots, texto);
       })();
       this.robots.set(origen, p);
@@ -84,19 +87,18 @@ export class LectorWeb {
     return p;
   }
 
-  /** ¿Se puede leer esta URL según robots.txt? */
-  async permitido(url: string): Promise<boolean> {
-    const origen = new URL(url).origin;
-    const r = await this.cargarRobots(origen);
-    if (r === "bloqueado") return false;
-    return r.isAllowed(url, this.userAgent) !== false;
+  /** Devuelve null si se puede leer la URL, o el motivo por el que no. */
+  async motivoBloqueo(url: string): Promise<string | null> {
+    const r = await this.cargarRobots(new URL(url).origin);
+    if ("bloqueado" in r) return r.bloqueado;
+    return r.isAllowed(url, this.userAgent) === false ? "robots.txt no permite el acceso automático" : null;
   }
 
   private async respetarDemora(url: string): Promise<void> {
     if (this.sinEsperas) return;
     const origen = new URL(url).origin;
     const r = await this.cargarRobots(origen);
-    const demora = r === "bloqueado" ? 0 : Math.min(r.getCrawlDelay(this.userAgent) ?? 0, LIMITES.red.maxCrawlDelaySeg);
+    const demora = "bloqueado" in r ? 0 : Math.min(r.getCrawlDelay(this.userAgent) ?? 0, LIMITES.red.maxCrawlDelaySeg);
     const ultimo = this.ultimoPedido.get(origen) ?? 0;
     const espera = ultimo + demora * 1000 - Date.now();
     if (espera > 0) await new Promise((res) => setTimeout(res, espera));
@@ -105,9 +107,8 @@ export class LectorWeb {
 
   /** Trae el texto de una URL o lanza NoDisponible. */
   async leer(url: string): Promise<{ texto: string; urlFinal: string }> {
-    if (!(await this.permitido(url))) {
-      throw new NoDisponible(url, "robots.txt no permite el acceso automático");
-    }
+    const bloqueo = await this.motivoBloqueo(url);
+    if (bloqueo) throw new NoDisponible(url, bloqueo);
     await this.respetarDemora(url);
     const res = await this.pedir(url);
     if (res.status === 401 || res.status === 403 || res.status === 429) {

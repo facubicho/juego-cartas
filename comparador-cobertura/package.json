@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "description": "Compara cómo cubren una misma noticia distintos diarios argentinos, usando solo contenido público.",
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "db:migrate": "node --experimental-strip-types scripts/migrate.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "demo": "tsx scripts/demo.ts"
   },
   "engines": {
     "node": ">=22"
@@ -32,6 +34,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^5.1.0"
   }
