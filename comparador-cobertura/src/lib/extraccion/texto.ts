@@ -13,7 +13,11 @@ export function recortarATokens(texto: string, maxTokens = LIMITES.maxTokensPorN
   return { texto: (fin > maxCar * 0.6 ? corte.slice(0, fin + 1) : corte).trim(), recortado: true };
 }
 
-/** Quita parámetros de seguimiento, el fragmento y la barra final, y unifica el host. */
+/**
+ * Quita parámetros de seguimiento y el fragmento, y unifica el host.
+ * La barra final se conserva (algunos sitios la necesitan); para la caché se
+ * comparan las dos variantes con `variantesUrl`.
+ */
 export function normalizarUrl(url: string): string {
   const u = new URL(url.trim());
   u.hash = "";
@@ -22,7 +26,10 @@ export function normalizarUrl(url: string): string {
   for (const k of [...u.searchParams.keys()]) {
     if (/^(utm_|fbclid|gclid|mc_|ref|outputType|s$|from)/i.test(k)) u.searchParams.delete(k);
   }
-  let s = u.toString();
-  if (s.endsWith("/") && u.pathname !== "/") s = s.slice(0, -1);
-  return s;
+  return u.toString();
+}
+
+/** La URL con y sin barra final, para buscar en la caché. */
+export function variantesUrl(url: string): string[] {
+  return url.endsWith("/") ? [url, url.slice(0, -1)] : [url, url + "/"];
 }

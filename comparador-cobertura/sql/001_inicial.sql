@@ -28,11 +28,13 @@ CREATE TABLE IF NOT EXISTS comparaciones (
 );
 
 -- Notas que forman parte de una comparación (o que se intentaron y no estaban disponibles).
+-- No se guarda el texto de las notas: solo titular, bajada y la extracción parafraseada.
 CREATE TABLE IF NOT EXISTS notas (
   id              SERIAL PRIMARY KEY,
   comparacion_id  INTEGER NOT NULL REFERENCES comparaciones(id) ON DELETE CASCADE,
   medio_id        TEXT NOT NULL,
   url             TEXT,
+  url_canonica    TEXT,
   es_origen       BOOLEAN NOT NULL DEFAULT false,
   estado          TEXT NOT NULL CHECK (estado IN ('pendiente', 'ok', 'no_disponible', 'sin_coincidencia', 'descartada')),
   motivo          TEXT,
@@ -43,6 +45,7 @@ CREATE TABLE IF NOT EXISTS notas (
   extraccion      JSONB
 );
 CREATE INDEX IF NOT EXISTS notas_url_idx ON notas (url);
+CREATE INDEX IF NOT EXISTS notas_url_canonica_idx ON notas (url_canonica);
 CREATE INDEX IF NOT EXISTS notas_comparacion_idx ON notas (comparacion_id);
 
 -- Registro de cada llamada a la IA, para control de costos.
