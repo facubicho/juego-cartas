@@ -5,7 +5,7 @@ export function estimarTokens(texto: string): number {
 }
 
 /** Recorta el texto al límite de tokens, cortando en el final de una oración si se puede. */
-export function recortarATokens(texto: string, maxTokens = LIMITES.maxTokensPorNota): { texto: string; recortado: boolean } {
+export function recortarATokens(texto: string, maxTokens: number = LIMITES.maxTokensPorNota): { texto: string; recortado: boolean } {
   const maxCar = maxTokens * LIMITES.caracteresPorToken;
   if (texto.length <= maxCar) return { texto, recortado: false };
   const corte = texto.slice(0, maxCar);

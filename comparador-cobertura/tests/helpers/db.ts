@@ -1,5 +1,5 @@
 import pg from "pg";
-import { migrar } from "@/lib/db";
+import { migrar } from "@/lib/db/migrar";
 
 export const URL_TEST =
   process.env.TEST_DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/comparador_test";

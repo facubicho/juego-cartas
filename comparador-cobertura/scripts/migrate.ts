@@ -1,5 +1,5 @@
 import pg from "pg";
-import { migrar } from "../src/lib/db/index.ts";
+import { migrar } from "../src/lib/db/migrar.ts";
 
 const url = process.env.DATABASE_URL;
 if (!url) {

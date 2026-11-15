@@ -31,7 +31,9 @@ export async function buscarExistente(db: Db, url: string): Promise<number | nul
     `SELECT c.id FROM notas n JOIN comparaciones c ON c.id = n.comparacion_id
       WHERE (n.url = ANY($1) OR n.url_canonica = ANY($1))
         AND n.estado IN ('pendiente', 'ok')
-        AND c.estado IN ('procesando', 'lista')
+        AND (c.estado = 'lista'
+             -- Una comparación en curso hace más de 10 minutos se considera colgada.
+             OR (c.estado = 'procesando' AND c.actualizado > now() - interval '10 minutes'))
       ORDER BY c.creado DESC LIMIT 1`,
     [variantesUrl(url)],
   );

@@ -1,6 +1,4 @@
 import pg from "pg";
-import fs from "node:fs";
-import path from "node:path";
 
 /** Interfaz mínima que usan los módulos: sirve tanto para el pool como para una transacción. */
 export interface Db {
@@ -34,14 +32,6 @@ export async function enTransaccion<T>(db: pg.Pool, fn: (tx: Db) => Promise<T>):
     throw e;
   } finally {
     cliente.release();
-  }
-}
-
-/** Aplica los archivos de sql/ en orden. Son idempotentes. */
-export async function migrar(db: Db, dirSql = path.join(process.cwd(), "sql")): Promise<void> {
-  const archivos = fs.readdirSync(dirSql).filter((f) => f.endsWith(".sql")).sort();
-  for (const f of archivos) {
-    await db.query(fs.readFileSync(path.join(dirSql, f), "utf8"));
   }
 }
 
